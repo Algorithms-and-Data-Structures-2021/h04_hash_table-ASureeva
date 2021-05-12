@@ -16,26 +16,60 @@ namespace itis {
     if (load_factor <= 0.0 || load_factor > 1.0) {
       throw std::logic_error("hash table load factor must be in range [0...1]");
     }
-
+    buckets_.resize(capacity);
     // Tip: allocate hash-table buckets
   }
 
   std::optional<std::string> HashTable::Search(int key) const {
-    // Tip: compute hash code (index) and use linear search
+      const int index = hash(key);
+    auto bucket = buckets_[index];
+    for(auto pair : bucket){
+        if (pair.first == key){
+            return pair.second;
+        }
+    }
+      // Tip: compute hash code (index) and use linear search
     return std::nullopt;
   }
 
   void HashTable::Put(int key, const std::string &value) {
+      const int index = hash(key);
+      auto bucket = buckets_[index];
+          if (bucket.empty()){
+              num_keys_ += 1;
+              buckets_[index].push_back(std::pair(key, value));
+          }
+          else {
+              buckets_[index].push_back(std::pair{key, value});
+          }
+
+//      index = hash(key);
     // Tip 1: compute hash code (index) to determine which bucket to use
     // Tip 2: consider the case when the key exists (read the docs in the header file)
 
     if (static_cast<double>(num_keys_) / buckets_.size() >= load_factor_) {
+        utils::hash(key, buckets_.size());
+        buckets_.resize(buckets_.capacity()*HashTable::kGrowthCoefficient);
       // Tip 3: recompute hash codes (indices) for key-value pairs (create a new hash-table)
+//     !!!
       // Tip 4: use utils::hash(key, size) to compute new indices for key-value pairs
     }
   }
 
   std::optional<std::string> HashTable::Remove(int key) {
+      std::optional<std::string> node;
+      const int index = hash(key);
+      auto bucket = buckets_[index];
+      for(auto pair : bucket){
+          if (pair.first == key){
+              node = pair.second;
+              buckets_[index].remove(std::pair(key, pair.second));
+              return node;
+
+          }
+      }
+
+
     // Tip 1: compute hash code (index) to determine which bucket to use
     // TIp 2: find the key-value pair to remove and make a copy of value to return
     return std::nullopt;
@@ -83,3 +117,4 @@ namespace itis {
   }
 
 }  // namespace itis
+
